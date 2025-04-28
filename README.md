@@ -1,1 +1,1 @@
-# core
+# The codeSentinels - Monorepo
