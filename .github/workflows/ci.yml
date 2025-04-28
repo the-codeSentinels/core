@@ -6,29 +6,37 @@ on:
   pull_request:
 
 jobs:
+  # ──────────────────────────────────────────────
   build-node:
+    name: Build - secure-browser
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: secure-browser
+        working-directory: secure-browser   # root of the Electron app
     steps:
       - uses: actions/checkout@v4
+
+      # Set up Node (no cache for now → avoids lock-file error)
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-      - run: npm install
-      - run: npm run build
 
+      - run: npm install          # installs (even if no deps yet)
+      - run: npm run build        # calls the placeholder script
+
+  # ──────────────────────────────────────────────
   build-dotnet:
+    name: Build - overlay-scanner
     runs-on: windows-latest
     defaults:
       run:
-        working-directory: overlay-scanner
+        working-directory: overlay-scanner   # root of the .NET console app
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: '8.0.x'
+
       - run: dotnet restore
       - run: dotnet build --configuration Release
