@@ -1,0 +1,8 @@
+{
+  "name": "secure-browser",
+  "version": "0.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "echo building-browser && node src/index.js"
+  }
+}
