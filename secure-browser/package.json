@@ -1,8 +1,29 @@
 {
   "name": "secure-browser",
-  "version": "0.0.0",
-  "main": "src/index.js",
+  "version": "1.0.0",
+  "main": "index.js",
   "scripts": {
-    "build": "echo building-browser && node src/index.js"
-  }
+    "dev": "vite --port 5173",
+    "electron": "cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron electron/main.js",
+    "dev:all": "concurrently -k \"npm run dev\" \"npm run electron\"",
+    "build": "vite build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
+    "monaco-editor": "^0.52.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.4.1",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^29.4.6",
+    "vite": "^6.3.3"
+  },
+  "type": "module"
 }
