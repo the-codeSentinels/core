@@ -1,0 +1,2 @@
+/Users/mann-uofg/Mann's Space/Projects/core/overlay-scanner/publish/OverlayScanner.pdb
+/Users/mann-uofg/Mann's Space/Projects/core/overlay-scanner/publish/OverlayScanner.exe
