@@ -19,9 +19,8 @@ import { useMemo } from 'react';
 import ReactDOM from 'react-dom/client';
 import Editor from '@monaco-editor/react';
 
-const options = useMemo(() => ({ minimap: { enabled: false } }), []);
-
 function App() {
+  const options = useMemo(() => ({ minimap: { enabled: false } }), []);
   return (
     <div style={{ height: '100vh', width: '100vw' }}>
       <Editor
