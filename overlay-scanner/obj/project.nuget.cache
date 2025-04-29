@@ -1,8 +1,18 @@
 {
   "version": 2,
-  "dgSpecHash": "fZ8VioLt7ag=",
+  "dgSpecHash": "nG1zadL6KnM=",
   "success": true,
   "projectFilePath": "/Users/mann-uofg/Mann's Space/Projects/core/overlay-scanner/overlay-scanner.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "/Users/mann-uofg/.nuget/packages/microsoft.netcore.platforms/5.0.0/microsoft.netcore.platforms.5.0.0.nupkg.sha512",
+    "/Users/mann-uofg/.nuget/packages/microsoft.win32.registry/5.0.0/microsoft.win32.registry.5.0.0.nupkg.sha512",
+    "/Users/mann-uofg/.nuget/packages/system.security.accesscontrol/5.0.0/system.security.accesscontrol.5.0.0.nupkg.sha512",
+    "/Users/mann-uofg/.nuget/packages/system.security.principal.windows/5.0.0/system.security.principal.windows.5.0.0.nupkg.sha512",
+    "/Users/mann-uofg/.nuget/packages/vanara.core/4.1.3/vanara.core.4.1.3.nupkg.sha512",
+    "/Users/mann-uofg/.nuget/packages/vanara.pinvoke.gdi32/4.1.3/vanara.pinvoke.gdi32.4.1.3.nupkg.sha512",
+    "/Users/mann-uofg/.nuget/packages/vanara.pinvoke.kernel32/4.1.3/vanara.pinvoke.kernel32.4.1.3.nupkg.sha512",
+    "/Users/mann-uofg/.nuget/packages/vanara.pinvoke.shared/4.1.3/vanara.pinvoke.shared.4.1.3.nupkg.sha512",
+    "/Users/mann-uofg/.nuget/packages/vanara.pinvoke.user32/4.1.3/vanara.pinvoke.user32.4.1.3.nupkg.sha512"
+  ],
   "logs": []
 }
