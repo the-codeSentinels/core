@@ -3,3 +3,4 @@ dist/
 *.log
 .idea/
 .DS_Store
+overlay-scanner/publish/
