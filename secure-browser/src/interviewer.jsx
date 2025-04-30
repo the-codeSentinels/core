@@ -15,15 +15,29 @@ function Console() {
 
   return (
     <div>
-      <h2 style={{margin:'10px 16px'}}>Live Telemetry</h2>
-      <ul style={{listStyle:'none',padding:0}}>
-        {events.map(ev => (
-          <li key={ev.ts}
-              style={{background:'#ffecec',margin:'4px 16px',padding:'4px 8px',
-                      border:'1px solid #f00',borderRadius:'4px'}}>
-            {new Date(ev.ts).toLocaleTimeString()} — {ev.line}
-          </li>
-        ))}
+      <h2 style={{ margin: '10px 16px' }}>Live Telemetry</h2>
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {events.map(ev => {
+          // pick colour by type for each event
+          const backgroundColor =
+            ev.type === 'overlay' ? '#ffdddd' /* light red */ : '#ffe2b8' /* light orange */;
+
+          return (
+            <li
+              key={ev.ts}
+              style={{
+                background: backgroundColor,
+                margin: '4px 16px',
+                padding: '4px 8px',
+                border: ev.type === 'overlay' ? '1px solid #f00' : '1px solid #f90',
+                borderRadius: '4px',
+                fontFamily: 'monospace'
+              }}
+            >
+              {new Date(ev.ts).toLocaleTimeString()} — {ev.line}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

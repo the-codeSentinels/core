@@ -1,1 +1,1 @@
-{ "workspaces": ["secure-browser"] }
+{"workspaces":["secure-browser"],"devDependencies":{"electron-builder":"^26.0.12"}}

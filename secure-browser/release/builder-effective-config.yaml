@@ -1,0 +1,17 @@
+directories:
+  output: release
+  buildResources: build
+appId: com.codesentinels.kiosk
+files:
+  - filter:
+      - electron/**
+      - relay.js
+      - dist/**
+extraResources:
+  - filter:
+      - ../overlay-scanner/publish/**
+mac:
+  target: dmg
+win:
+  target: nsis
+electronVersion: 29.4.6

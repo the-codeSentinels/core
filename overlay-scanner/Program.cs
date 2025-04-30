@@ -30,6 +30,12 @@ namespace OverlayScanner
 
         private static void ScanOnce()
         {
+            if (RecorderScanner.IsRecording())
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"[!] {DateTime.Now:T} Screen recorder detected");
+                Console.ResetColor();
+            }
             User32.EnumWindows((hWnd, _) =>
             {
                 // Skip invisible / minimized windows

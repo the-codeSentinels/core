@@ -45,6 +45,14 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "SharpDX": {
+              "target": "Package",
+              "version": "[4.2.0, )"
+            },
+            "SharpDX.DXGI": {
+              "target": "Package",
+              "version": "[4.2.0, )"
+            },
             "Vanara.PInvoke.User32": {
               "target": "Package",
               "version": "[4.1.3, )"

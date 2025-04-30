@@ -1,14 +1,35 @@
 {
   "name": "secure-browser",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "vite --strictPort --port 5173",
     "electron": "cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron electron/main.js",
     "relay": "node relay.js",
     "dev:all": "concurrently -k --success=first \"npm run dev\" \"wait-on http://localhost:5173 && npm run electron\"",
-    "build": "vite build"
+    "build": "vite build",
+    "dist": "npm run build && electron-builder"
   },
+  "build": {
+    "appId": "com.codesentinels.kiosk",
+    "files": [
+      "electron/**",    
+      "relay.js",        
+      "dist/**"           
+    ],
+    "extraResources": [
+      "../overlay-scanner/publish/**"  
+    ],
+    "directories": {
+      "output": "release"  
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    }
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -26,6 +47,7 @@
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "electron": "^29.4.6",
+    "electron-builder": "^26.0.12",
     "vite": "^6.3.3",
     "wait-on": "^8.0.3"
   },
