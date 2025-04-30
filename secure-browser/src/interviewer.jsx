@@ -13,23 +13,28 @@ function Console() {
     return () => ws.close();
   }, []);
 
+  // Map event types to styles
+  const typeStyles = {
+    overlay:  { background: '#ffdddd', border: '1px solid #f00' },
+    recorder: { background: '#ffe2b8', border: '1px solid #f90' },
+    blur:     { background: '#ddddee', border: '1px solid #00f' }
+  };
+
   return (
     <div>
       <h2 style={{ margin: '10px 16px' }}>Live Telemetry</h2>
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {events.map(ev => {
-          // pick colour by type for each event
-          const backgroundColor =
-            ev.type === 'overlay' ? '#ffdddd' /* light red */ : '#ffe2b8' /* light orange */;
+          const style = typeStyles[ev.type] || { background: '#fff', border: '1px solid #ccc' };
 
           return (
             <li
               key={ev.ts}
               style={{
-                background: backgroundColor,
+                background: style.background,
+                border: style.border,
                 margin: '4px 16px',
                 padding: '4px 8px',
-                border: ev.type === 'overlay' ? '1px solid #f00' : '1px solid #f90',
                 borderRadius: '4px',
                 fontFamily: 'monospace'
               }}

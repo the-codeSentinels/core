@@ -13,15 +13,15 @@
   "build": {
     "appId": "com.codesentinels.kiosk",
     "files": [
-      "electron/**",    
-      "relay.js",        
-      "dist/**"           
+      "electron/**",
+      "relay.js",
+      "dist/**"
     ],
     "extraResources": [
-      "../overlay-scanner/publish/**"  
+      "../overlay-scanner/publish/**"
     ],
     "directories": {
-      "output": "release"  
+      "output": "release"
     },
     "mac": {
       "target": "dmg"
@@ -29,7 +29,7 @@
     "win": {
       "target": "nsis"
     }
-},
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

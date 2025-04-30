@@ -2,13 +2,13 @@
 self.MonacoEnvironment = {
   getWorker(_, label) {
     const workers = {
-      json:  'monaco-editor/esm/vs/language/json/json.worker?worker',
-      css:   'monaco-editor/esm/vs/language/css/css.worker?worker',
-      html:  'monaco-editor/esm/vs/language/html/html.worker?worker',
-      ts:    'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
+      json:  '/vs/language/json/json.worker.js',
+      css:   '/vs/language/css/css.worker.js',
+      html:  '/vs/language/html/html.worker.js',
+      ts:    '/vs/language/typescript/ts.worker.js'
     };
-    const url = workers[label] ||
-      'monaco-editor/esm/vs/editor/editor.worker?worker';
+    const defaultWorker = '/vs/editor/editor.worker.js';
+    const url = workers[label] || defaultWorker;
     return new Worker(new URL(url, import.meta.url), { type: 'module' });
   }
 };
