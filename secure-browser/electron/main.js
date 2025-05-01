@@ -1,106 +1,73 @@
-import { app, BrowserWindow, globalShortcut, Menu } from 'electron';
+// secure-browser/electron/main.js
+import { app, BrowserWindow, globalShortcut, Menu, ipcMain } from 'electron';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { spawn } from 'node:child_process';
 import { platform } from 'node:os';
 
-import '../relay.js';                  // starts the WS relay
-import { broadcast } from '../relay.js';
+import { startRelay, broadcast } from '../relay.js';   // will noop if already running
+startRelay();                                          // safe – binds only if free
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 
-// If you're running dev:all, this env var will be set
 const DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 
-/**
- * Create the candidate kiosk window
- */
+/* ── BrowserWindow factory ─────────────────────────────── */
 function createWindow() {
-  // Hide Dock icon on macOS
-  if (process.platform === 'darwin') {
-    app.dock.hide();
-  }
-
-  // Remove any application menu
+  if (process.platform === 'darwin') app.dock.hide();
   Menu.setApplicationMenu(null);
 
   const win = new BrowserWindow({
-    kiosk: true,               // fullscreen + always-on-top + no OS chrome
+    kiosk: true,
     frame: false,
     autoHideMenuBar: true,
     webPreferences: {
       contextIsolation: true,
-      nodeIntegration: false,
+      preload: join(__dirname, 'preload.js')   // exposes quit IPC
     }
   });
 
-  // Block right-click context menu
+  /* block context menu & shortcuts */
   win.webContents.on('context-menu', e => e.preventDefault());
-
-  // Block any modifier-based shortcuts (copy/paste, devtools, etc.)
   win.webContents.on('before-input-event', (e, input) => {
-    if (input.control || input.meta || input.alt) {
-      e.preventDefault();
-    }
+    if (input.control || input.meta || input.alt) e.preventDefault();
   });
 
-  // Any time the window blurs, force it back and tell the interviewer
+  /* blur event → immediately refocus & notify interviewer */
   win.on('blur', () => {
-    const ts = Date.now();
-    console.log('[blur] window lost focus');
-    broadcast({ ts, type: 'blur', line: 'window lost focus' });
-    // immediately pull focus back
+    broadcast({ ts: Date.now(), type: 'blur', line: 'window lost focus' });
     win.focus();
   });
 
-  // Load dev server or built files
-  if (DEV_SERVER_URL) {
-    win.loadURL(DEV_SERVER_URL);
-  } else {
-    const indexPath = join(__dirname, '../dist/index.html');
-    win.loadFile(indexPath);
-  }
+  /* load content */
+  if (DEV_SERVER_URL) win.loadURL(DEV_SERVER_URL);
+  else                win.loadFile(join(__dirname, '../dist/index.html'));
 
-  // Controlled exit shortcut
+  /* controlled quit hot-key */
   globalShortcut.register('CommandOrControl+Shift+Q', () => app.quit());
 }
 
-// ─── Spawn the overlay / recorder scanner ───────────────────
+/* ── scanner (Windows only) ────────────────────────────── */
 if (platform() === 'win32') {
-  const scannerExe = join(
-    __dirname,
-    '../../overlay-scanner/publish/OverlayScanner.exe'
-  );
-  const scanner = spawn(scannerExe, [], { windowsHide: true });
+  const exe = join(__dirname, '../../overlay-scanner/publish/OverlayScanner.exe');
+  const scanner = spawn(exe, [], { windowsHide: true });
 
-  scanner.stdout.on('data', data => {
-    const line = data.toString().trim();
-    console.log('[scanner]', line);
-    const type = line.includes('Screen recorder detected')
-      ? 'recorder'
-      : 'overlay';
+  scanner.stdout.on('data', d => {
+    const line = d.toString().trim();
+    const type = line.includes('Screen recorder') ? 'recorder' : 'overlay';
     broadcast({ ts: Date.now(), type, line });
   });
 
-  scanner.stderr.on('data', data =>
-    console.error('[scanner-err]', data.toString().trim())
-  );
-
+  scanner.stderr.on('data', d => console.error('[scanner-err]', d.toString().trim()));
   app.on('will-quit', () => scanner.kill());
 }
 
-// Ensure the app doesn't quit on window close (kiosk stays alive)
+/* ── IPC: renderer requests quit after timer ───────────── */
+ipcMain.on('quitAfterTimer', () => app.quit());
+
+/* ── app lifecycle ─────────────────────────────────────── */
 app.on('window-all-closed', () => {});
-
-// Create the window when Electron is ready
 app.whenReady().then(createWindow);
-
-// ─── macOS “activate” handler to re-focus or re-create the window ───────────────────
-if (process.platform === 'darwin') {
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
-}
+if (process.platform === 'darwin')
+  app.on('activate', () => BrowserWindow.getAllWindows().length || createWindow());

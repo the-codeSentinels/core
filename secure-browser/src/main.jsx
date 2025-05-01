@@ -13,22 +13,46 @@ self.MonacoEnvironment = {
   }
 };
 
-
 import React from 'react';
-import { useMemo } from 'react';
 import ReactDOM from 'react-dom/client';
 import Editor from '@monaco-editor/react';
+import Timer from './Timer.jsx';
+import { broadcast } from '../relay.js';
 
 function App() {
-  const options = useMemo(() => ({ minimap: { enabled: false } }), []);
+  // 90 minutes in milliseconds
+  const examLength = 90 * 60 * 1000;
+
+  // called when timer reaches zero
+  const handleExpire = () => {
+    broadcast({ ts: Date.now(), type: 'examEnd', line: 'Timer expired' });
+    // replace the entire UI with a "Time is up!" message
+    ReactDOM.createRoot(document.getElementById('root')).render(
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        fontSize: 32,
+        fontFamily: 'sans-serif'
+      }}>
+        Time is up!
+      </div>
+    );
+  };
+
   return (
     <div style={{ height: '100vh', width: '100vw' }}>
+      {/* Countdown timer in top-right */}
+      <Timer durationMs={examLength}   onExpire={handleExpire}/>
+
+      {/* Your Monaco editor */}
       <Editor
         height="100%"
         defaultLanguage="javascript"
         defaultValue="// Happy coding!"
         theme="vs-dark"
-        options={options}
+        options={{ minimap: { enabled: false } }}
       />
     </div>
   );

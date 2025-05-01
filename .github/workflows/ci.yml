@@ -40,3 +40,22 @@ jobs:
 
       - run: dotnet restore
       - run: dotnet build --configuration Release
+
+  # ──────────────────────────────────────────────
+  pack-electron:
+    needs: [build-node, build-dotnet]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install deps
+        run: npm ci --workspace secure-browser
+      - name: Build & Package
+        run: |
+          cd secure-browser
+          npm run build
+          npm run dist
+

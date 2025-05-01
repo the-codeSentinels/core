@@ -1,44 +1,66 @@
 // secure-browser/relay.js
+import http from 'node:http';
+import net  from 'node:net';
 import { WebSocketServer } from 'ws';
 import { v4 as uuid } from 'uuid';
 
-const PORT = 9000;
+const WS_PORT = 9000;
+const HB_PORT = 9001;
 
-let isRelayUp = false;
-let wss = new WebSocketServer({ port: PORT });
+let wss;                // WebSocket server reference
 
-// Once we’re actually listening, flip the flag and log success
-wss.on('listening', () => {
-  console.log(`🔌  Telemetry relay up on ws://localhost:${PORT}`);
-  isRelayUp = true;
-});
-
-// If the port is already bound, emit a warning and don’t crash
-wss.on('error', err => {
-  if (err.code === 'EADDRINUSE') {
-    console.warn(`⚠️  Relay port ${PORT} already in use, skipping server start`);
-    // clean up the half-open server
-    wss.close();
-  } else {
-    // some other error: rethrow
-    throw err;
-  }
-});
-
-// Only when the server is truly up do we attach connection/close handlers
-wss.on('connection', ws => {
-  const id = uuid().slice(0, 8);
-  console.log(`▶️  interviewer connected (${id})`);
-  ws.on('close',   () => console.log(`⏹️  interviewer left (${id})`));
-});
-
-/** Broadcast helper — no-ops if the server never came up */
-export function broadcast(msg) {
-  if (!isRelayUp) return;
-  const data = JSON.stringify(msg);
-  for (const client of wss.clients) {
-    if (client.readyState === 1) {
-      client.send(data);
-    }
-  }
+/* ── util: test if a TCP port is free ───────────────────── */
+function isPortFree(port) {
+  return new Promise(res => {
+    const tester = net
+      .createServer()
+      .once('error', () => res(false))
+      .once('listening', () => tester.close(() => res(true)))
+      .listen(port, '127.0.0.1');
+  });
 }
+
+/* ── broadcast helper (safe if wss undefined) ───────────── */
+export function broadcast(msg) {
+  if (!wss) return;
+  const data = JSON.stringify(msg);
+  wss.clients.forEach(ws => ws.readyState === ws.OPEN && ws.send(data));
+}
+
+/* ── startRelay: only binds if ports are free ───────────── */
+export async function startRelay() {
+  const wsFree = await isPortFree(WS_PORT);
+  const hbFree = await isPortFree(HB_PORT);
+
+  if (!wsFree && !hbFree) {
+    console.log('🟡 relay already running');
+    return;
+  }
+  if (!wsFree || !hbFree) {
+    console.error('⚠️  partial port collision; aborting relay start');
+    return;
+  }
+
+  /* WebSocket relay */
+  wss = new WebSocketServer({ port: WS_PORT });
+  console.log(`🔌 Telemetry relay up on ws://localhost:${WS_PORT}`);
+
+  wss.on('connection', ws => {
+    const id = uuid().slice(0, 8);
+    console.log(`▶️  interviewer connected (${id})`);
+    ws.on('close', () => console.log(`⏹️  interviewer left (${id})`));
+  });
+
+  /* HTTP heartbeat */
+  http
+    .createServer((_, res) => {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ last: Date.now() }));
+    })
+    .listen(HB_PORT, () =>
+      console.log(`🔌 Heartbeat endpoint on http://localhost:${HB_PORT}/heartbeat`)
+    );
+}
+
+/* auto-start when imported */
+startRelay();
