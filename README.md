@@ -1,1 +1,1 @@
-# The codeSentinels - Monorepo
+# The codeSentinels
