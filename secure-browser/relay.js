@@ -1,13 +1,17 @@
 // secure-browser/relay.js
 import http from 'node:http';
-import net  from 'node:net';
+import net from 'node:net';
 import { WebSocketServer } from 'ws';
 import { v4 as uuid } from 'uuid';
+import express from 'express';
+import multer from 'multer';
 
 const WS_PORT = 9000;
 const HB_PORT = 9001;
+const SNAP_PORT = 9002;
+const upload = multer({ dest: 'uploads/' });
 
-let wss;                // WebSocket server reference
+let wss; // WebSocket server reference
 
 /* ── util: test if a TCP port is free ───────────────────── */
 function isPortFree(port) {
@@ -37,29 +41,39 @@ export async function startRelay() {
     return;
   }
   if (!wsFree || !hbFree) {
-    console.error('⚠️  partial port collision; aborting relay start');
+    console.error('⚠️ partial port collision; aborting relay start');
     return;
   }
 
-  /* WebSocket relay */
-  wss = new WebSocketServer({ port: WS_PORT });
-  console.log(`🔌 Telemetry relay up on ws://localhost:${WS_PORT}`);
+  /* WebSocket relay (bind on all interfaces) */
+  wss = new WebSocketServer({ port: WS_PORT, host: '0.0.0.0' });
+  console.log(`🔌 Telemetry relay up on ws://0.0.0.0:${WS_PORT}`);
 
   wss.on('connection', ws => {
     const id = uuid().slice(0, 8);
-    console.log(`▶️  interviewer connected (${id})`);
-    ws.on('close', () => console.log(`⏹️  interviewer left (${id})`));
+    console.log(`▶️ interviewer connected (${id})`);
+    ws.on('close', () => console.log(`⏹️ interviewer left (${id})`));
   });
 
-  /* HTTP heartbeat */
+  /* HTTP heartbeat (bind on all interfaces) */
   http
     .createServer((_, res) => {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ last: Date.now() }));
     })
-    .listen(HB_PORT, () =>
-      console.log(`🔌 Heartbeat endpoint on http://localhost:${HB_PORT}/heartbeat`)
+    .listen(HB_PORT, '0.0.0.0', () =>
+      console.log(`🔌 Heartbeat endpoint on http://0.0.0.0:${HB_PORT}/heartbeat`)
     );
+
+  /* REST API for snapshot uploads */
+  const app = express();
+  app.post('/upload', upload.single('snapshot'), (req, res) => {
+    console.log('📥 snapshot:', req.file.path);
+    res.sendStatus(200);
+  });
+  app.listen(SNAP_PORT, '0.0.0.0', () =>
+    console.log(`🔌 Snapshot API on http://0.0.0.0:${SNAP_PORT}/upload`)
+  );
 }
 
 /* auto-start when imported */

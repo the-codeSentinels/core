@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { spawn } from 'node:child_process';
 import { platform } from 'node:os';
+import screenshot from 'screenshot-desktop';
 
 import { startRelay, broadcast } from '../relay.js';   // will noop if already running
 startRelay();                                          // safe – binds only if free
@@ -35,8 +36,13 @@ function createWindow() {
   });
 
   /* blur event → immediately refocus & notify interviewer */
-  win.on('blur', () => {
-    broadcast({ ts: Date.now(), type: 'blur', line: 'window lost focus' });
+  win.on('blur', async () => {
+    broadcast({ ts:Date.now(), type:'blur', line:'window lost focus' });
+    try {
+      const img = await screenshot({ format:'png' });
+      // img is a Buffer; base64‑encode and send via WS
+      broadcast({ ts:Date.now(), type:'screen', img: img.toString('base64') });
+    } catch(e) { console.error(e); }
     win.focus();
   });
 
